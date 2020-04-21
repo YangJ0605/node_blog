@@ -5,6 +5,11 @@ const userRouter = require('./src/router/user')
 
 //存储session
 const SESSION_DATA = {}
+const getCookieExpires = () => {
+  const d = new Date()
+  d.setTime(d.getTime() + (24 * 60 * 60 * 1000))
+  return d.toUTCString()
+}
 
 const getPostData = (req) => {
   return new Promise((resolve, reject) => {
@@ -42,9 +47,19 @@ const serverHandle = (req, res) => {
   req.cookie = {}
   const cookie = req.headers.cookie
 
+  cookie && cookie.split(';').forEach(item => {
+    if(!item) return
+    const tempArr = item.split('=')
+    const key = tempArr[0].trim()
+    const value = tempArr[1].trim()
+    // console.log(key, value)
+    req.cookie[key] = value
+  })
+
   //解析sessin 
   let userID = req.cookie.userid
   let needSetCookie = false
+  // console.log('SESSION_DATA[userID]',SESSION_DATA[userID])
   if(userID) {
     if(!SESSION_DATA[userID]) {
       SESSION_DATA[userID] = {}
@@ -56,22 +71,14 @@ const serverHandle = (req, res) => {
   }
   req.session = SESSION_DATA[userID]
 
-
-  cookie && cookie.split(';').forEach(item => {
-    if(!item) return
-    const tempArr = item.split('=')
-    const key = tempArr[0].trim()
-    const value = tempArr[1].trim()
-    console.log(key, value)
-    req.cookie[key] = value
-  })
-  // console.log(req.cookie)
-
   getPostData(req).then(postData => {
     req.body = postData
     const blogRes = blogRouter(req, res)
     if(blogRes) {
       return blogRes.then(blogData => {
+        if(needSetCookie) {
+          res.setHeader('Set-Cookie', `userid=${userID}; path=/; HttpOnly; Expires=${getCookieExpires()}`)
+        }
           res.end(JSON.stringify(blogData))
       })
     }
@@ -79,6 +86,9 @@ const serverHandle = (req, res) => {
     const userRes = userRouter(req, res)
     if (userRes) {
       return userRes.then(userData => {
+        if(needSetCookie) {
+          res.setHeader('Set-Cookie', `userid=${userID}; path=/; HttpOnly; Expires=${getCookieExpires()}`)
+        }
         res.end(JSON.stringify(userData))
       })
     }

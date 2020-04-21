@@ -1,6 +1,6 @@
 const mysql = require('mysql')
 
-const MYSQL_CONF = require('../config/db')
+const {MYSQL_CONF} = require('../config/db')
 // console.log(MYSQL_CONF)
 const connection = mysql.createConnection(MYSQL_CONF)
 

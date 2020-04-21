@@ -9,12 +9,15 @@ const handleUserRouter = (req, res) => {
 
   //登录
   if (method === 'POST' && path === '/api/user/login') {
-    const result = login(req.body)
-    if (result) {
-      return new SuccessModel(result)
-    }
-    return new ErrorModel('账号或者密码有误')
-  }
+    // const {username, password} = req.body
+    return login(req.body).then(res => {
+      if(res.username) {
+        res.msg = '登录成功'
+        return new SuccessModel(res)
+      }
+      return new ErrorModel({msg: '账号或密码错误'})
+    })
+}
 }
 
 module.exports = handleUserRouter

@@ -1,0 +1,34 @@
+@url = http://localhost:8000
+
+
+post {{url}}/api/blog/new
+Content-Type: application/json
+
+{
+  "title": "rest cliedddnt testdddd",
+  "content": "client dddcontentdddd"
+}
+
+
+###
+post {{url}}/api/blog/upadte?id=10
+Content-Type: application/json
+
+{
+  "content":"upade content3",
+  "title": "uapdate title3"
+}
+
+
+###
+post {{url}}/api/blog/delete?id=9
+
+
+###
+post {{url}}/api/user/login
+Content-Type: application/json
+
+{
+  "username":"张三",
+  "password":"123456"
+}

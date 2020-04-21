@@ -38,20 +38,22 @@ const serverHandle = (req, res) => {
 
   getPostData(req).then(postData => {
     req.body = postData
-    const blogData = blogRouter(req, res)
-    if (blogData) {
-      res.end(JSON.stringify(blogData))
-      return
+    const blogRes = blogRouter(req, res)
+    if(blogRes) {
+      return blogRes.then(blogData => {
+          res.end(JSON.stringify(blogData))
+      })
+    }
+    
+    const userRes = userRouter(req, res)
+    if (userRes) {
+      return userRes.then(userData => {
+        res.end(JSON.stringify(userData))
+      })
     }
 
-    const userData = userRouter(req, res)
-    if (userData) {
-      res.end(JSON.stringify(userData))
-      return
-    }
-
-    res.writeHead(404, { 'Content-type': 'text/plain' })
-    res.write('404\n')
+    res.writeHead(404, { 'Content-type': 'text/html;charset=utf-8' })
+    res.write(`<h4 style='color:red;text-align:center;margin-top:20px'>404 error 您访问的页面不存在</h4>`)
     res.end()
   })
 }

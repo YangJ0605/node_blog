@@ -3,6 +3,8 @@ const qs = require('querystring')
 const blogRouter = require('./src/router/blog')
 const userRouter = require('./src/router/user')
 
+//存储session
+const SESSION_DATA = {}
 
 const getPostData = (req) => {
   return new Promise((resolve, reject) => {
@@ -35,6 +37,35 @@ const serverHandle = (req, res) => {
   const url = req.url
   req.path = url.split('?')[0]
   req.query = qs.parse(url.split('?')[1])
+
+  //解析cookie
+  req.cookie = {}
+  const cookie = req.headers.cookie
+
+  //解析sessin 
+  let userID = req.cookie.userid
+  let needSetCookie = false
+  if(userID) {
+    if(!SESSION_DATA[userID]) {
+      SESSION_DATA[userID] = {}
+    } 
+  }else {
+    needSetCookie = true
+    userID = `${Date.now()}_${parseInt(Math.random() * 1000)}`
+    SESSION_DATA[userID] = {}
+  }
+  req.session = SESSION_DATA[userID]
+
+
+  cookie && cookie.split(';').forEach(item => {
+    if(!item) return
+    const tempArr = item.split('=')
+    const key = tempArr[0].trim()
+    const value = tempArr[1].trim()
+    console.log(key, value)
+    req.cookie[key] = value
+  })
+  // console.log(req.cookie)
 
   getPostData(req).then(postData => {
     req.body = postData
